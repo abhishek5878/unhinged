@@ -12,6 +12,15 @@ import { joinWaitlist } from "@/lib/api";
 function HeroSection() {
   return (
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden px-4">
+      {/* Gradient mesh background */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 80% 60% at 50% 40%, #00c8ff08 0%, transparent 70%), radial-gradient(ellipse 60% 50% at 30% 70%, #ff6b3506 0%, transparent 70%)",
+        }}
+      />
+
       {/* Orbital rings */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         <div className="absolute h-[600px] w-[600px] animate-[spin_30s_linear_infinite] rounded-full border border-[#00c8ff]/10" />
@@ -27,32 +36,35 @@ function HeroSection() {
       </div>
 
       <div className="relative z-10 max-w-3xl text-center">
-        <p className="mb-4 font-[family-name:var(--font-space-mono)] text-xs uppercase tracking-[0.3em] text-[#00c8ff]/70">
-          Relationship Intelligence
-        </p>
+        <div className="mb-6 inline-block rounded-full border border-[#162638] bg-[#060d14]/80 px-4 py-1.5">
+          <span className="font-[family-name:var(--font-space-mono)] text-[11px] uppercase tracking-[0.25em] text-[#00c8ff]/80">
+            PRELUDE
+          </span>
+        </div>
         <h1 className="font-[family-name:var(--font-syne)] text-5xl font-extrabold leading-[1.1] tracking-tight text-[#e8f4ff] md:text-7xl">
-          Know before
+          See the relationship
           <br />
           <span className="bg-gradient-to-r from-[#00c8ff] to-[#ff6b35] bg-clip-text text-transparent">
-            you commit.
+            before the relationship.
           </span>
         </h1>
         <p className="mx-auto mt-6 max-w-xl font-[family-name:var(--font-crimson-pro)] text-lg leading-relaxed text-[#e8f4ff]/60 md:text-xl">
-          We simulate 100+ futures of your relationship using recursive Theory
-          of Mind — so you can see what&apos;s coming before it arrives.
+          We simulate 100+ futures of your relationship — the fights, the
+          growth, the breaking points — so you know what you&apos;re walking
+          into.
         </p>
         <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
           <a
             href="#waitlist"
             className="rounded-lg bg-[#00c8ff] px-8 py-4 font-[family-name:var(--font-syne)] text-sm font-bold text-[#020408] transition-all hover:bg-[#00c8ff]/90 hover:shadow-[0_0_30px_#00c8ff30]"
           >
-            Join the waitlist →
+            Get early access
           </a>
           <a
             href="#how-it-works"
             className="rounded-lg border border-[#162638] px-8 py-4 font-[family-name:var(--font-syne)] text-sm font-bold text-[#e8f4ff]/70 transition-all hover:border-[#00c8ff]/30 hover:text-[#e8f4ff]"
           >
-            How it works
+            Watch it work
           </a>
         </div>
       </div>
@@ -67,15 +79,13 @@ function HeroSection() {
 const problemCards = [
   {
     title: "Dating apps",
-    desc: "Optimise for first impressions. Swipe, match, ghost. Repeat.",
+    desc: "Optimise for first dates. Swipe, match, ghost. Repeat.",
     color: "#e8f4ff",
-    opacity: "30",
   },
   {
-    title: "APRIORI MATCH",
-    desc: "Simulates the relationship you'd actually have — fights, growth, repair — across 100+ Monte Carlo timelines.",
+    title: "PRELUDE",
+    desc: "Simulates the relationship you\u2019d actually build \u2014 fights, growth, repair \u2014 across 100+ futures.",
     color: "#00c8ff",
-    opacity: "100",
     highlight: true,
   },
 ];
@@ -156,7 +166,7 @@ const steps = [
   {
     number: "02",
     title: "Monte Carlo simulation",
-    desc: "Our Relational Foundation Model runs 100+ timeline simulations — injecting realistic crises (financial stress, long-distance, family conflict) to see how you'd navigate them together.",
+    desc: "Our Relational Foundation Model runs 100+ timeline simulations \u2014 injecting realistic crises to see how you\u2019d navigate them together.",
     icon: (
       <svg
         className="h-8 w-8 text-[#ff6b35]"
@@ -176,7 +186,7 @@ const steps = [
   {
     number: "03",
     title: "Get your Compatibility Report",
-    desc: "A detailed report showing survival probability, crisis resilience patterns, emotional repair dynamics, and narrative convergence — not a percentage, a prognosis.",
+    desc: "A detailed report showing survival probability, crisis resilience, emotional repair dynamics, and narrative convergence \u2014 not a percentage, a prognosis.",
     icon: (
       <svg
         className="h-8 w-8 text-[#00c8ff]"
@@ -261,11 +271,10 @@ function ReportPreviewSection() {
         </h2>
 
         <div className="relative mt-12 rounded-2xl border border-[#162638] bg-[#020408] p-8 md:p-12">
-          {/* Fake report content */}
           <div className="mb-8 flex items-center gap-3">
             <div className="h-3 w-3 rounded-full bg-[#00c8ff]" />
             <span className="font-[family-name:var(--font-space-mono)] text-xs text-[#e8f4ff]/40">
-              APRIORI MATCH — Compatibility Report (Sample)
+              PRELUDE — Compatibility Report (Sample)
             </span>
           </div>
 
@@ -291,7 +300,6 @@ function ReportPreviewSection() {
             <div className="h-3 w-3/5 rounded bg-[#162638]" />
           </div>
 
-          {/* Gradient fade overlay */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 rounded-b-2xl bg-gradient-to-t from-[#020408] to-transparent" />
         </div>
       </div>
@@ -300,7 +308,59 @@ function ReportPreviewSection() {
 }
 
 // ---------------------------------------------------------------------------
-// Section 5 — Waitlist CTA
+// Section 5 — Trust / Numbers
+// ---------------------------------------------------------------------------
+
+const trustStats = [
+  {
+    number: "100+",
+    label: "Simulated timelines",
+    desc: "per match",
+  },
+  {
+    number: "8",
+    label: "Crisis axes",
+    desc: "tested per timeline",
+  },
+  {
+    number: "L2",
+    label: "Theory of Mind",
+    desc: "recursive depth",
+  },
+];
+
+function TrustSection() {
+  return (
+    <section className="px-4 py-24 md:py-32">
+      <div className="mx-auto max-w-4xl">
+        <p className="mb-3 font-[family-name:var(--font-space-mono)] text-xs uppercase tracking-[0.3em] text-[#e8f4ff]/20">
+          Built on research
+        </p>
+        <div className="mt-8 grid gap-6 sm:grid-cols-3">
+          {trustStats.map((stat) => (
+            <div
+              key={stat.label}
+              className="rounded-xl border border-[#162638] bg-[#060d14]/30 p-6 text-center"
+            >
+              <p className="font-[family-name:var(--font-syne)] text-3xl font-extrabold text-[#00c8ff]">
+                {stat.number}
+              </p>
+              <p className="mt-2 font-[family-name:var(--font-space-mono)] text-xs uppercase tracking-wider text-[#e8f4ff]/50">
+                {stat.label}
+              </p>
+              <p className="mt-1 font-[family-name:var(--font-crimson-pro)] text-sm text-[#e8f4ff]/30">
+                {stat.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Section 6 — Waitlist CTA
 // ---------------------------------------------------------------------------
 
 const cities = [
@@ -419,7 +479,7 @@ function WaitlistCTASection() {
               disabled={submitting}
               className="w-full rounded-lg bg-[#00c8ff] px-8 py-4 font-[family-name:var(--font-syne)] text-sm font-bold text-[#020408] transition-all hover:bg-[#00c8ff]/90 hover:shadow-[0_0_30px_#00c8ff30] disabled:opacity-50"
             >
-              {submitting ? "Joining..." : "Join the waitlist →"}
+              {submitting ? "Joining..." : "Get early access"}
             </button>
           </form>
         )}
@@ -429,7 +489,7 @@ function WaitlistCTASection() {
 }
 
 // ---------------------------------------------------------------------------
-// Section 6 — Footer
+// Section 7 — Footer
 // ---------------------------------------------------------------------------
 
 function FooterSection() {
@@ -437,10 +497,10 @@ function FooterSection() {
     <footer className="border-t border-[#162638] px-4 py-12">
       <div className="mx-auto flex max-w-4xl flex-col items-center gap-4 text-center">
         <p className="font-[family-name:var(--font-syne)] text-lg font-bold text-[#e8f4ff]/80">
-          APRIORI MATCH
+          PRELUDE
         </p>
         <p className="font-[family-name:var(--font-space-mono)] text-xs text-[#e8f4ff]/30">
-          Relationship intelligence, not relationship roulette.
+          See the relationship before the relationship.
         </p>
         <div className="mt-4 flex gap-6">
           <Link
@@ -457,7 +517,7 @@ function FooterSection() {
           </Link>
         </div>
         <p className="mt-6 font-[family-name:var(--font-space-mono)] text-[10px] text-[#e8f4ff]/20">
-          &copy; {new Date().getFullYear()} APRIORI MATCH. All rights reserved.
+          &copy; {new Date().getFullYear()} PRELUDE. All rights reserved.
         </p>
       </div>
     </footer>
@@ -475,6 +535,7 @@ export default function MatchPage() {
       <ProblemSection />
       <HowItWorksSection />
       <ReportPreviewSection />
+      <TrustSection />
       <Suspense fallback={null}>
         <WaitlistCTASection />
       </Suspense>

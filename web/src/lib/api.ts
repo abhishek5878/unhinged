@@ -95,3 +95,73 @@ export async function getMyWaitlistPosition(
   }
   return res.json();
 }
+
+// ---------------------------------------------------------------------------
+// Simulation API
+// ---------------------------------------------------------------------------
+
+import type { SimulationStatus } from "@/types/simulation";
+
+export async function createSimulation(
+  token: string,
+  userAId: string,
+  userBId: string,
+  nTimelines: number = 100
+): Promise<{ simulation_id: string; status: string; eta_seconds: number }> {
+  const res = await fetch(`${BASE}/simulate`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      user_a_id: userAId,
+      user_b_id: userBId,
+      n_timelines: nTimelines,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Failed to create simulation" }));
+    throw new Error(err.detail || "Failed to create simulation");
+  }
+  return res.json();
+}
+
+export async function getSimulation(
+  token: string,
+  simulationId: string
+): Promise<SimulationStatus> {
+  const res = await fetch(`${BASE}/simulate/${simulationId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    throw new Error("Failed to fetch simulation");
+  }
+  return res.json();
+}
+
+export async function getSimulationReport(
+  token: string,
+  simulationId: string
+): Promise<{ simulation_id: string; report: string }> {
+  const res = await fetch(`${BASE}/simulate/${simulationId}/report`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    throw new Error("Failed to fetch report");
+  }
+  return res.json();
+}
+
+export async function cancelSimulation(
+  token: string,
+  simulationId: string
+): Promise<void> {
+  const res = await fetch(`${BASE}/simulate/${simulationId}/cancel`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    throw new Error("Failed to cancel simulation");
+  }
+}

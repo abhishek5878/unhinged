@@ -7,8 +7,7 @@ export function Navbar() {
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="text-xl font-bold tracking-tight">
-          <span className="text-primary">APRIORI</span>{" "}
-          <span className="text-muted-foreground">MATCH</span>
+          <span className="text-primary">PRELUDE</span>
         </Link>
 
         <div className="hidden items-center gap-6 md:flex">

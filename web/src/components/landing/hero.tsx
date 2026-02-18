@@ -13,7 +13,7 @@ export function Hero() {
             Know Before You Commit
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground sm:text-xl">
-            APRIORI simulates 100+ relationship scenarios using recursive Theory
+            PRELUDE simulates 100+ relationship scenarios using recursive Theory
             of Mind and Monte Carlo analysis to predict long-term compatibility
             &mdash; before you&apos;re emotionally invested.
           </p>

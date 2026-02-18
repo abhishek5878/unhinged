@@ -3,7 +3,7 @@ export function Footer() {
     <footer className="border-t py-8">
       <div className="container mx-auto flex flex-col items-center justify-between gap-4 px-4 sm:flex-row">
         <p className="text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} APRIORI MATCH. All rights reserved.
+          &copy; {new Date().getFullYear()} PRELUDE. All rights reserved.
         </p>
         <div className="flex gap-6">
           <a

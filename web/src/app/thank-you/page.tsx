@@ -31,7 +31,7 @@ function ThankYouContent() {
       <CardHeader className="text-center">
         <CardTitle className="text-2xl">You&apos;re In!</CardTitle>
         <CardDescription>
-          You&apos;ve been added to the APRIORI MATCH waitlist.
+          You&apos;ve been added to the PRELUDE waitlist.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">

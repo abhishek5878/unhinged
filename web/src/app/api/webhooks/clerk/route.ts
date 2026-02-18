@@ -73,13 +73,13 @@ export async function POST(req: Request) {
             Authorization: `Bearer ${resendKey}`,
           },
           body: JSON.stringify({
-            from: "APRIORI MATCH <hello@apriori.match>",
+            from: "PRELUDE <hello@prelude.app>",
             to: email,
             subject: "You're on the list.",
             html: `<div style="font-family: monospace; color: #e8f4ff; background: #020408; padding: 40px; max-width: 480px;">
-              <p style="font-size: 16px; line-height: 1.6;">APRIORI MATCH predicts long-term compatibility by simulating 100+ relationship scenarios before you're emotionally invested.</p>
+              <p style="font-size: 16px; line-height: 1.6;">PRELUDE simulates 100+ futures of your relationship — the fights, the growth, the breaking points — so you know what you're walking into.</p>
               <p style="font-size: 16px; line-height: 1.6;">Next step: complete your shadow vector profile. It takes 3 minutes.</p>
-              <p style="margin-top: 24px;"><a href="${process.env.FRONTEND_URL || "https://apriori.match"}/app/onboarding" style="color: #00c8ff; font-size: 16px;">Complete your profile &rarr;</a></p>
+              <p style="margin-top: 24px;"><a href="${process.env.FRONTEND_URL || "https://prelude.app"}/app/onboarding" style="color: #00c8ff; font-size: 16px;">Complete your profile &rarr;</a></p>
             </div>`,
           }),
         });

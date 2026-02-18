@@ -24,13 +24,13 @@ const crimsonPro = Crimson_Pro({
 });
 
 export const metadata: Metadata = {
-  title: "APRIORI MATCH — Know Before You Commit",
+  title: "PRELUDE — See the Relationship Before the Relationship",
   description:
-    "AI-powered relationship compatibility prediction. We simulate 100+ relationship scenarios using Theory of Mind and Monte Carlo analysis to predict long-term compatibility.",
+    "We simulate 100+ futures of your relationship — the fights, the growth, the breaking points — so you know what you're walking into.",
   openGraph: {
-    title: "APRIORI MATCH — Know Before You Commit",
+    title: "PRELUDE — See the Relationship Before the Relationship",
     description:
-      "AI-powered relationship compatibility prediction using recursive Theory of Mind.",
+      "We simulate 100+ futures of your relationship using recursive Theory of Mind and Monte Carlo analysis.",
     type: "website",
   },
 };

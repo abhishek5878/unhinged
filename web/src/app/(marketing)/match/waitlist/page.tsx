@@ -40,7 +40,7 @@ function WaitlistReferralContent() {
   }
 
   function handleShareWhatsApp() {
-    const text = `I just joined the APRIORI MATCH waitlist — they simulate 100+ futures of your relationship before you commit. Join using my link: ${referralLink}`;
+    const text = `I just joined the PRELUDE waitlist — they simulate 100+ futures of your relationship before you commit. Join using my link: ${referralLink}`;
     window.open(
       `https://wa.me/?text=${encodeURIComponent(text)}`,
       "_blank"
@@ -48,7 +48,7 @@ function WaitlistReferralContent() {
   }
 
   function handleShareTwitter() {
-    const text = `Just joined @apriori_match — they use AI to simulate 100+ relationship timelines before you commit. Wild. ${referralLink}`;
+    const text = `Just joined @prelude_app — they use AI to simulate 100+ relationship timelines before you commit. Wild. ${referralLink}`;
     window.open(
       `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
       "_blank"
@@ -157,7 +157,7 @@ function WaitlistReferralContent() {
           href="/match"
           className="mt-8 inline-block font-[family-name:var(--font-space-mono)] text-xs text-[#e8f4ff]/30 hover:text-[#e8f4ff]/50 transition-colors"
         >
-          ← Back to APRIORI MATCH
+          ← Back to PRELUDE
         </a>
       </div>
     </main>

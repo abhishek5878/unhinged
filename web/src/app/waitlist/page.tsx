@@ -9,8 +9,7 @@ export default function WaitlistPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <Link href="/" className="mb-4 text-xl font-bold tracking-tight">
-            <span className="text-primary">APRIORI</span>{" "}
-            <span className="text-muted-foreground">MATCH</span>
+            <span className="text-primary">PRELUDE</span>
           </Link>
           <CardTitle className="text-2xl">Join the Waitlist</CardTitle>
           <CardDescription>
