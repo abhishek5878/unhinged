@@ -13,3 +13,10 @@ venv/
 .ruff_cache/
 *.so
 .DS_Store
+
+# Node / Next.js
+node_modules/
+web/.next/
+web/out/
+web/.env.local
+.vercel

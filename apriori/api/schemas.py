@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 
 
 # ---------------------------------------------------------------------------
@@ -197,3 +197,131 @@ class SimulationProgressMessage(BaseModel):
     total: int
     status: str
     percent: float = Field(..., ge=0.0, le=100.0)
+
+
+# ---------------------------------------------------------------------------
+# Auth schemas
+# ---------------------------------------------------------------------------
+
+
+class SyncUserRequest(BaseModel):
+    """Webhook payload to sync a Clerk user into our database."""
+
+    clerk_user_id: str
+    email: str
+    name: str = ""
+
+
+class SyncUserResponse(BaseModel):
+    """Response after syncing a user."""
+
+    user_id: UUID
+    created: bool
+
+
+class MeResponse(BaseModel):
+    """Current authenticated user's profile summary."""
+
+    user_id: UUID
+    clerk_user_id: str
+    email: Optional[str] = None
+    name: Optional[str] = None
+    has_shadow_vector: bool
+    onboarding_complete: bool
+    simulation_count: int
+
+
+# ---------------------------------------------------------------------------
+# Waitlist schemas
+# ---------------------------------------------------------------------------
+
+
+class WaitlistSignupRequest(BaseModel):
+    """Join the APRIORI MATCH waitlist."""
+
+    name: str = Field(
+        ..., min_length=1, max_length=255, json_schema_extra={"example": "Arjun Sharma"}
+    )
+    email: EmailStr = Field(
+        ..., json_schema_extra={"example": "arjun@example.com"}
+    )
+    partner_email: Optional[EmailStr] = Field(
+        default=None, json_schema_extra={"example": "priya@example.com"}
+    )
+    referral_code_used: Optional[str] = Field(
+        default=None, max_length=20, json_schema_extra={"example": "ABC12345"}
+    )
+
+
+class WaitlistSignupResponse(BaseModel):
+    """Response after joining the waitlist."""
+
+    id: UUID
+    email: str
+    name: str
+    partner_email: Optional[str] = None
+    position: int
+    referral_code: str
+    status: str
+    created_at: datetime
+
+
+class WaitlistPositionResponse(BaseModel):
+    """Current waitlist position for an authenticated user."""
+
+    email: str
+    position: int
+    referral_code: str
+    status: str
+    total_signups: int
+
+
+# ---------------------------------------------------------------------------
+# WaitlistEntry schemas (revamped waitlist with city + referral tracking)
+# ---------------------------------------------------------------------------
+
+
+class WaitlistEntryRequest(BaseModel):
+    """Join the APRIORI MATCH waitlist (revamped)."""
+
+    email: EmailStr = Field(
+        ..., json_schema_extra={"example": "arjun@example.com"}
+    )
+    city: str = Field(
+        ..., min_length=1, max_length=255, json_schema_extra={"example": "Mumbai"}
+    )
+    ref: Optional[str] = Field(
+        default=None, max_length=20, json_schema_extra={"example": "ABC12345"}
+    )
+    source: str = Field(
+        default="organic", max_length=50, json_schema_extra={"example": "organic"}
+    )
+
+
+class WaitlistEntryResponse(BaseModel):
+    """Response after joining the waitlist."""
+
+    email: str
+    city: str
+    position: int
+    referral_code: str
+    referral_count: int
+    total_signups: int
+
+
+class WaitlistCheckResponse(BaseModel):
+    """Check if an email is already on the waitlist."""
+
+    on_waitlist: bool
+    position: Optional[int] = None
+    referral_code: Optional[str] = None
+    referral_count: int = 0
+
+
+class WaitlistStatsResponse(BaseModel):
+    """Admin stats for the waitlist."""
+
+    total: int
+    cities: Dict[str, int]
+    sources: Dict[str, int]
+    conversions: int

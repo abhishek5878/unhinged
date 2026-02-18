@@ -26,9 +26,22 @@ class Settings(BaseSettings):
     langchain_tracing_v2: bool = True
     langchain_api_key: str = ""
     langchain_project: str = "apriori"
+    langsmith_api_key: str = ""
+    langsmith_project: str = "apriori-rfm"
+    langsmith_tracing: bool = True
 
     # Mem0
     mem0_api_key: str = ""
+
+    # Clerk
+    clerk_secret_key: str = ""
+    clerk_publishable_key: str = ""
+    clerk_issuer: str = ""
+    clerk_webhook_secret: str = ""
+    resend_api_key: str = ""
+
+    # Frontend
+    frontend_url: str = "http://localhost:3000"
 
     # Simulation
     default_num_simulations: int = 100

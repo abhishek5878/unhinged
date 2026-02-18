@@ -24,10 +24,10 @@ import numpy as np
 from rich.console import Console
 from rich.table import Table
 
-from apriori.agents.dialogue_graph import run_simulation
 from apriori.core.event_generator import StochasticEventGenerator
 from apriori.models.shadow_vector import ShadowVector
 from apriori.models.simulation import RelationalProbabilityDistribution, TimelineResult
+from apriori.observability import trace_monte_carlo_timeline
 
 logger = logging.getLogger(__name__)
 
@@ -144,6 +144,7 @@ class RelationalMonteCarlo:
             timelines=results,
         )
 
+    @trace_monte_carlo_timeline
     async def _run_single_timeline(
         self,
         shadow_a: ShadowVector,
@@ -159,6 +160,8 @@ class RelationalMonteCarlo:
         between timelines.
         """
         try:
+            from apriori.agents.dialogue_graph import run_simulation
+
             event_gen = StochasticEventGenerator(self._llm)
 
             result = await run_simulation(

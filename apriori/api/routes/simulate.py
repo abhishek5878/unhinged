@@ -25,7 +25,6 @@ from apriori.db.models import SimulationRun, UserProfile
 from apriori.db.session import get_session
 from apriori.models.shadow_vector import AttachmentStyle, ShadowVector
 from apriori.models.simulation import RelationalProbabilityDistribution
-from apriori.workflows.simulation_workflow import AprioriSimulationWorkflow, SimulationInput
 
 logger = logging.getLogger(__name__)
 
@@ -160,7 +159,8 @@ async def create_simulation(
         session.add(sim_run)
         await session.commit()
 
-        # Start Temporal workflow
+        # Start Temporal workflow (lazy import to avoid langgraph chain)
+        from apriori.workflows.simulation_workflow import AprioriSimulationWorkflow, SimulationInput
         await req.app.state.temporal_client.start_workflow(
             AprioriSimulationWorkflow.run,
             SimulationInput(
@@ -353,6 +353,7 @@ async def cancel_simulation(
         raise HTTPException(status_code=409, detail=f"Cannot cancel simulation in '{run.status}' state")
 
     if run.temporal_workflow_id and req.app.state.temporal_client:
+        from apriori.workflows.simulation_workflow import AprioriSimulationWorkflow
         handle = req.app.state.temporal_client.get_workflow_handle(run.temporal_workflow_id)
         await handle.signal(AprioriSimulationWorkflow.cancel_simulation)
 

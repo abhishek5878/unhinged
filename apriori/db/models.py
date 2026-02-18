@@ -1,9 +1,8 @@
 """SQLAlchemy ORM models for the APRIORI persistence layer."""
 
-from __future__ import annotations
-
 import uuid
 from datetime import datetime, timezone
+from typing import List, Optional
 
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
@@ -34,7 +33,22 @@ class UserProfile(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
-    shadow_vector: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    clerk_user_id: Mapped[Optional[str]] = mapped_column(
+        String(255), nullable=True, unique=True, index=True
+    )
+    email: Mapped[Optional[str]] = mapped_column(
+        String(255), nullable=True, index=True
+    )
+    name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    shadow_vector: Mapped[dict] = mapped_column(
+        JSONB, nullable=False, default=dict
+    )
+    onboarding_complete: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False
+    )
+    is_deleted: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False
+    )
     embedding = mapped_column(Vector(512), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow
@@ -43,14 +57,14 @@ class UserProfile(Base):
         DateTime(timezone=True), default=_utcnow, onupdate=_utcnow
     )
 
-    # Relationships
-    simulations_as_a: Mapped[list[SimulationRun]] = relationship(
+    # Relationships (string refs for forward declarations)
+    simulations_as_a: Mapped[List["SimulationRun"]] = relationship(
         back_populates="user_a", foreign_keys="SimulationRun.user_a_id"
     )
-    simulations_as_b: Mapped[list[SimulationRun]] = relationship(
+    simulations_as_b: Mapped[List["SimulationRun"]] = relationship(
         back_populates="user_b", foreign_keys="SimulationRun.user_b_id"
     )
-    linguistic_profiles: Mapped[list[LinguisticProfileRecord]] = relationship(
+    linguistic_profiles: Mapped[List["LinguisticProfileRecord"]] = relationship(
         back_populates="user"
     )
 
@@ -86,15 +100,15 @@ class SimulationRun(Base):
     status: Mapped[str] = mapped_column(
         String(20), nullable=False, default="pending"
     )
-    temporal_workflow_id: Mapped[str | None] = mapped_column(
+    temporal_workflow_id: Mapped[Optional[str]] = mapped_column(
         String(255), nullable=True
     )
     n_timelines: Mapped[int] = mapped_column(Integer, nullable=False)
-    results: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    results: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow
     )
-    completed_at: Mapped[datetime | None] = mapped_column(
+    completed_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
 
@@ -105,7 +119,7 @@ class SimulationRun(Base):
     user_b: Mapped[UserProfile] = relationship(
         back_populates="simulations_as_b", foreign_keys=[user_b_id]
     )
-    crisis_episodes: Mapped[list[CrisisEpisodeRecord]] = relationship(
+    crisis_episodes: Mapped[List["CrisisEpisodeRecord"]] = relationship(
         back_populates="simulation_run"
     )
 
@@ -163,7 +177,7 @@ class LinguisticProfileRecord(Base):
     )
     phrase_registry: Mapped[dict] = mapped_column(JSONB, default=dict)
     convergence_history: Mapped[dict] = mapped_column(JSONB, default=dict)
-    last_simulation_id: Mapped[uuid.UUID | None] = mapped_column(
+    last_simulation_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("simulation_runs.id"),
         nullable=True,
@@ -177,3 +191,84 @@ class LinguisticProfileRecord(Base):
 
     def __repr__(self) -> str:
         return f"LinguisticProfileRecord(id={self.id!s:.8}…, user={self.user_id!s:.8}…)"
+
+
+class WaitlistSignup(Base):
+    """Waitlist signup for early access."""
+
+    __tablename__ = "waitlist_signups"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    email: Mapped[str] = mapped_column(
+        String(255), nullable=False, unique=True, index=True
+    )
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    partner_email: Mapped[Optional[str]] = mapped_column(
+        String(255), nullable=True
+    )
+    referral_code: Mapped[str] = mapped_column(
+        String(20), nullable=False, unique=True, index=True
+    )
+    referral_code_used: Mapped[Optional[str]] = mapped_column(
+        String(20), nullable=True
+    )
+    position: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="waiting"
+    )
+    clerk_user_id: Mapped[Optional[str]] = mapped_column(
+        String(255), nullable=True, index=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"WaitlistSignup(id={self.id!s:.8}…, "
+            f"email={self.email!r}, pos={self.position})"
+        )
+
+
+class WaitlistEntry(Base):
+    """Revamped waitlist entry with city-based clustering and referral tracking."""
+
+    __tablename__ = "waitlist_entries"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    email: Mapped[str] = mapped_column(
+        String(255), nullable=False, unique=True, index=True
+    )
+    city: Mapped[str] = mapped_column(String(255), nullable=False)
+    referral_code: Mapped[str] = mapped_column(
+        String(20), nullable=False, unique=True, index=True
+    )
+    referred_by: Mapped[Optional[str]] = mapped_column(
+        String(20), nullable=True, index=True
+    )
+    referral_count: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0
+    )
+    position: Mapped[int] = mapped_column(Integer, nullable=False)
+    joined_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow
+    )
+    converted: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False
+    )
+    converted_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    source: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="organic"
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"WaitlistEntry(id={self.id!s:.8}…, "
+            f"email={self.email!r}, city={self.city!r}, pos={self.position})"
+        )

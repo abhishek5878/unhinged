@@ -21,6 +21,8 @@ import math
 from datetime import datetime, timezone
 from typing import Any, Dict, List
 
+from apriori.observability import trace_tom_update
+
 from apriori.models.shadow_vector import (
     SHADOW_VALUE_KEYS,
     AttachmentStyle,
@@ -162,6 +164,7 @@ class ToMTracker:
     # Public API
     # ------------------------------------------------------------------
 
+    @trace_tom_update
     async def hidden_thought(
         self,
         other_id: str,

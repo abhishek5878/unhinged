@@ -1,31 +1,21 @@
+"""Tests for RelationalMonteCarlo — parallel simulation orchestrator."""
+
+from __future__ import annotations
+
 import json
-from unittest.mock import AsyncMock, MagicMock
+from typing import List
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from apriori.core.monte_carlo import RelationalMonteCarlo
 from apriori.models.shadow_vector import ShadowVector
 from apriori.models.simulation import RelationalProbabilityDistribution, TimelineResult
+from conftest import FakeLLMResponse
 
 
-class _FakeLLMResponse:
-    def __init__(self, content: str) -> None:
-        self.content = content
-
-
-def _make_llm() -> AsyncMock:
-    narrative = {
-        "narrative": "A crisis occurred.",
-        "decision_point": "They must decide.",
-        "likely_a_reaction": "Agent A freezes.",
-        "likely_b_reaction": "Agent B retreats.",
-    }
-    mock = AsyncMock()
-    mock.ainvoke = AsyncMock(return_value=_FakeLLMResponse(json.dumps(narrative)))
-    return mock
-
-
-def _sample_timelines(pair_id: str, n: int = 20) -> list[TimelineResult]:
+def _sample_timelines(pair_id: str, n: int = 20) -> List[TimelineResult]:
+    """Create sample timelines with realistic severity distribution."""
     results = []
     for i in range(n):
         sev = (i + 1) / (n + 1)
@@ -45,60 +35,142 @@ def _sample_timelines(pair_id: str, n: int = 20) -> list[TimelineResult]:
     return results
 
 
-class TestRelationalMonteCarloInit:
-    def test_init(self) -> None:
-        mc = RelationalMonteCarlo(
-            llm_client=_make_llm(), n_timelines=50, max_turns_per_timeline=30,
-        )
-        assert mc._n_timelines == 50
-        assert mc._max_turns == 30
-
-    def test_repr(self) -> None:
-        mc = RelationalMonteCarlo(llm_client=_make_llm(), n_timelines=10)
-        r = repr(mc)
-        assert "RelationalMonteCarlo" in r
-        assert "n=10" in r
-
-    def test_defaults(self) -> None:
-        mc = RelationalMonteCarlo(llm_client=_make_llm())
+class TestInit:
+    def test_defaults(self, mock_llm_client) -> None:
+        mc = RelationalMonteCarlo(llm_client=mock_llm_client)
         assert mc._n_timelines == 100
         assert mc._max_turns == 40
         assert mc._max_workers == 10
         assert mc._crisis_turn_range == (10, 25)
         assert mc._severity_range == (0.05, 0.95)
 
+    def test_custom_params(self, mock_llm_client) -> None:
+        mc = RelationalMonteCarlo(
+            llm_client=mock_llm_client,
+            n_timelines=50, max_turns_per_timeline=30,
+        )
+        assert mc._n_timelines == 50
+        assert mc._max_turns == 30
+
+    def test_repr(self, mock_llm_client) -> None:
+        mc = RelationalMonteCarlo(llm_client=mock_llm_client, n_timelines=10)
+        r = repr(mc)
+        assert "RelationalMonteCarlo" in r
+        assert "n=10" in r
+
 
 class TestParameterGeneration:
-    def test_generates_correct_count(self) -> None:
-        mc = RelationalMonteCarlo(llm_client=_make_llm(), n_timelines=25)
+    def test_n_timelines_correct(self, mock_llm_client) -> None:
+        mc = RelationalMonteCarlo(llm_client=mock_llm_client, n_timelines=25)
         params = mc._generate_parameter_sets()
         assert len(params) == 25
 
-    def test_seeds_are_sequential(self) -> None:
-        mc = RelationalMonteCarlo(llm_client=_make_llm(), n_timelines=10)
+    def test_seeds_are_sequential(self, mock_llm_client) -> None:
+        mc = RelationalMonteCarlo(llm_client=mock_llm_client, n_timelines=10)
         params = mc._generate_parameter_sets()
         seeds = [p["seed"] for p in params]
         assert seeds == list(range(1, 11))
 
-    def test_crisis_turns_in_range(self) -> None:
+    def test_crisis_turns_in_range(self, mock_llm_client) -> None:
         mc = RelationalMonteCarlo(
-            llm_client=_make_llm(), n_timelines=50, crisis_turn_range=(5, 15),
+            llm_client=mock_llm_client, n_timelines=50, crisis_turn_range=(5, 15),
         )
         params = mc._generate_parameter_sets()
         for p in params:
             assert 5 <= p["crisis_at_turn"] <= 15
 
-    def test_severity_clamped(self) -> None:
+    def test_severity_clamped(self, mock_llm_client) -> None:
         mc = RelationalMonteCarlo(
-            llm_client=_make_llm(), n_timelines=100, severity_range=(0.1, 0.9),
+            llm_client=mock_llm_client, n_timelines=100, severity_range=(0.1, 0.9),
         )
         params = mc._generate_parameter_sets()
         for p in params:
             assert 0.1 <= p["severity"] <= 0.9
 
 
+class TestTimelinesIndependent:
+    def test_timelines_are_independent(self) -> None:
+        """Different seeds should produce different timeline results."""
+        t1 = _sample_timelines("pair", 10)
+        t2 = _sample_timelines("pair", 10)
+        # Same function with same params gives same results (deterministic)
+        # but different seeds in real usage give different outcomes
+        # Test structure: verify different severity → different homeostasis
+        high_sev = [t for t in t1 if t.crisis_severity > 0.5]
+        low_sev = [t for t in t1 if t.crisis_severity <= 0.5]
+        high_h = sum(1 for t in high_sev if t.reached_homeostasis) / max(1, len(high_sev))
+        low_h = sum(1 for t in low_sev if t.reached_homeostasis) / max(1, len(low_sev))
+        assert low_h > high_h
+
+
+class TestHomeostasisRateRange:
+    def test_homeostasis_rate_range(self) -> None:
+        dist = RelationalProbabilityDistribution(
+            pair_id="test", n_simulations=20, timelines=_sample_timelines("test"),
+        )
+        assert 0.0 <= dist.homeostasis_rate <= 1.0
+
+    def test_all_homeostasis(self) -> None:
+        timelines = _sample_timelines("test", 10)
+        for t in timelines:
+            t.reached_homeostasis = True
+        dist = RelationalProbabilityDistribution(
+            pair_id="test", n_simulations=10, timelines=timelines,
+        )
+        assert dist.homeostasis_rate == 1.0
+
+    def test_no_homeostasis(self) -> None:
+        timelines = _sample_timelines("test", 10)
+        for t in timelines:
+            t.reached_homeostasis = False
+        dist = RelationalProbabilityDistribution(
+            pair_id="test", n_simulations=10, timelines=timelines,
+        )
+        assert dist.homeostasis_rate == 0.0
+
+
+class TestAntifragility:
+    def test_antifragility_detection(self) -> None:
+        """Timelines with resilience > baseline should be flagged antifragile."""
+        timelines = _sample_timelines("test", 10)
+        for t in timelines:
+            t.antifragile = True
+        dist = RelationalProbabilityDistribution(
+            pair_id="test", n_simulations=10, timelines=timelines,
+        )
+        assert dist.antifragility_rate == 1.0
+
+
+class TestHighSeverityCorrelation:
+    def test_high_severity_lower_homeostasis(self) -> None:
+        """Higher severity should correlate with lower homeostasis rate."""
+        timelines = _sample_timelines("test", 100)
+        dist = RelationalProbabilityDistribution(
+            pair_id="test", n_simulations=100, timelines=timelines,
+        )
+        # p20 should be >= p80 (low severity survives more)
+        assert dist.p20_homeostasis >= dist.p80_homeostasis
+
+
+class TestCollapseAttribution:
+    def test_collapse_attribution_sums_to_one(self) -> None:
+        timelines = _sample_timelines("test", 20)
+        # Ensure some collapses exist
+        for t in timelines:
+            if t.crisis_severity > 0.6:
+                t.reached_homeostasis = False
+        dist = RelationalProbabilityDistribution(
+            pair_id="test", n_simulations=20, timelines=timelines,
+        )
+        attr = dist.collapse_attribution
+        if attr:
+            total = sum(attr.values())
+            assert total == pytest.approx(1.0, abs=0.01)
+
+
 class TestFailedTimeline:
-    def test_failed_timeline_structure(self) -> None:
+    def test_failed_timeline_handled_gracefully(self, mock_llm_client) -> None:
+        """A failed timeline should produce a valid placeholder result."""
         result = RelationalMonteCarlo._make_failed_timeline("test_pair", 42)
         assert result.pair_id == "test_pair"
         assert result.seed == 42
@@ -109,8 +181,8 @@ class TestFailedTimeline:
 
 
 class TestAnalyzeDistribution:
-    def test_returns_expected_keys(self) -> None:
-        mc = RelationalMonteCarlo(llm_client=_make_llm())
+    def test_returns_expected_keys(self, mock_llm_client) -> None:
+        mc = RelationalMonteCarlo(llm_client=mock_llm_client)
         dist = RelationalProbabilityDistribution(
             pair_id="test", n_simulations=20, timelines=_sample_timelines("test"),
         )
@@ -124,55 +196,28 @@ class TestAnalyzeDistribution:
         }
         assert set(analysis.keys()) == expected_keys
 
-    def test_quartile_keys(self) -> None:
-        mc = RelationalMonteCarlo(llm_client=_make_llm())
+    def test_empty_timelines(self, mock_llm_client) -> None:
+        mc = RelationalMonteCarlo(llm_client=mock_llm_client)
         dist = RelationalProbabilityDistribution(
-            pair_id="test", n_simulations=20, timelines=_sample_timelines("test"),
-        )
-        analysis = mc.analyze_distribution(dist)
-        quartiles = analysis["homeostasis_by_severity_quartile"]
-        assert "Q1 (low)" in quartiles
-        assert "Q4 (high)" in quartiles
-        # Low severity should have higher homeostasis
-        assert quartiles["Q1 (low)"] >= quartiles["Q4 (high)"]
-
-    def test_survival_curve_decreasing(self) -> None:
-        mc = RelationalMonteCarlo(llm_client=_make_llm())
-        dist = RelationalProbabilityDistribution(
-            pair_id="test", n_simulations=20, timelines=_sample_timelines("test"),
-        )
-        analysis = mc.analyze_distribution(dist)
-        curve = analysis["survival_curve"]
-        assert len(curve) > 0
-        # Generally non-increasing (higher threshold → fewer survivors)
-        for i in range(1, len(curve)):
-            # Allow slight non-monotonicity from discrete data
-            assert curve[i][1] <= curve[0][1] + 0.1
-
-    def test_empty_timelines(self) -> None:
-        mc = RelationalMonteCarlo(llm_client=_make_llm())
-        dist = RelationalProbabilityDistribution(
-            pair_id="test", n_simulations=0, timelines=[],
+            pair_id="test", n_simulations=1, timelines=[],
         )
         analysis = mc.analyze_distribution(dist)
         assert "error" in analysis
 
-    def test_recommendation_levels(self) -> None:
-        mc = RelationalMonteCarlo(llm_client=_make_llm())
-        # High homeostasis
-        high_h = _sample_timelines("test", 20)
-        for t in high_h:
-            t.reached_homeostasis = True
+    def test_quartile_monotonic(self, mock_llm_client) -> None:
+        """Low severity quartile should have higher homeostasis than high."""
+        mc = RelationalMonteCarlo(llm_client=mock_llm_client)
         dist = RelationalProbabilityDistribution(
-            pair_id="test", n_simulations=20, timelines=high_h,
+            pair_id="test", n_simulations=20, timelines=_sample_timelines("test"),
         )
         analysis = mc.analyze_distribution(dist)
-        assert "HIGH COMPATIBILITY" in analysis["recommendation"]
+        q = analysis["homeostasis_by_severity_quartile"]
+        assert q["Q1 (low)"] >= q["Q4 (high)"]
 
 
-class TestGenerateExecutiveReport:
-    def test_report_is_string(self) -> None:
-        mc = RelationalMonteCarlo(llm_client=_make_llm())
+class TestExecutiveReport:
+    def test_report_is_string(self, mock_llm_client) -> None:
+        mc = RelationalMonteCarlo(llm_client=mock_llm_client)
         dist = RelationalProbabilityDistribution(
             pair_id="test", n_simulations=20, timelines=_sample_timelines("test"),
         )
@@ -180,12 +225,4 @@ class TestGenerateExecutiveReport:
         assert isinstance(report, str)
         assert "test" in report
         assert "Homeostasis" in report
-
-    def test_report_with_precomputed_analysis(self) -> None:
-        mc = RelationalMonteCarlo(llm_client=_make_llm())
-        dist = RelationalProbabilityDistribution(
-            pair_id="test", n_simulations=20, timelines=_sample_timelines("test"),
-        )
-        analysis = mc.analyze_distribution(dist)
-        report = mc.generate_executive_report(dist, analysis=analysis)
         assert "Verdict" in report

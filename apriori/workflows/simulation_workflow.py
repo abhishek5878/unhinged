@@ -21,7 +21,6 @@ from temporalio import activity, workflow
 with workflow.unsafe.imports_passed_through():
     import redis.asyncio as aioredis
 
-    from apriori.agents.dialogue_graph import run_simulation
     from apriori.config import settings
     from apriori.core.event_generator import StochasticEventGenerator
     from apriori.models.shadow_vector import ShadowVector
@@ -103,6 +102,7 @@ async def run_timeline_batch_activity(batch_input: TimelineBatchInput) -> List[s
     for seed, crisis_turn in zip(batch_input.seeds, batch_input.crisis_turns):
         activity.heartbeat(f"Running timeline seed={seed}")
         try:
+            from apriori.agents.dialogue_graph import run_simulation
             timeline = await run_simulation(
                 shadow_a=shadow_a,
                 shadow_b=shadow_b,

@@ -21,6 +21,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from apriori.models.events import BlackSwanEvent, EventTaxonomy
 from apriori.models.shadow_vector import SHADOW_VALUE_KEYS, AttachmentStyle, ShadowVector
+from apriori.observability import trace_crisis_injection
 
 # ---------------------------------------------------------------------------
 # Axis -> EventTaxonomy mapping
@@ -174,6 +175,7 @@ class StochasticEventGenerator:
 
         return top_axis, score, explanation
 
+    @trace_crisis_injection
     async def generate_black_swan(
         self,
         shadow_a: ShadowVector,
