@@ -63,6 +63,21 @@ export function MatchCard({
         </span>
       </div>
 
+      {/* Compatibility score */}
+      {candidate.compatibility_score !== undefined && (
+        <div className="mb-3 flex items-center gap-2">
+          <div className="h-1 flex-1 rounded-full bg-[#162638]">
+            <div
+              className="h-full rounded-full bg-[#00c8ff]"
+              style={{ width: `${Math.round(candidate.compatibility_score * 100)}%` }}
+            />
+          </div>
+          <span className="font-[family-name:var(--font-space-mono)] text-xs text-[#00c8ff]">
+            {Math.round(candidate.compatibility_score * 100)}%
+          </span>
+        </div>
+      )}
+
       {/* Vulnerability hint */}
       <p className="mb-6 font-[family-name:var(--font-crimson-pro)] text-sm italic text-[#e8f4ff]/50 leading-relaxed">
         {candidate.shared_vulnerability_hint}

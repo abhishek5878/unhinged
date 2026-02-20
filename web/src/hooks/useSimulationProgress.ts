@@ -4,8 +4,16 @@ import { useEffect, useRef, useCallback } from "react";
 import { useSimulationStore } from "@/lib/simulation-store";
 import type { SimulationProgress } from "@/types/simulation";
 
-const WS_BASE =
-  process.env.NEXT_PUBLIC_WS_BASE_URL || "ws://localhost:8000";
+function deriveWsBase(): string {
+  if (process.env.NEXT_PUBLIC_WS_BASE_URL) {
+    return process.env.NEXT_PUBLIC_WS_BASE_URL;
+  }
+  const api = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+  if (api.startsWith("https://")) return api.replace("https://", "wss://");
+  if (api.startsWith("http://")) return api.replace("http://", "ws://");
+  return "ws://localhost:8000";
+}
+const WS_BASE = deriveWsBase();
 const MAX_RETRIES = 3;
 
 export function useSimulationProgress(simulationId: string | null) {

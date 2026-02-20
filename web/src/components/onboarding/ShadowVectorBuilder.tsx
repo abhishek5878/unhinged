@@ -15,7 +15,7 @@ import { CompletionScreen } from "./CompletionScreen";
 const steps = [Step1, Step2, Step3, Step4, Step5, Step6, Step7, Step8];
 
 export function ShadowVectorBuilder() {
-  const { currentStep, isComplete } = useOnboardingStore();
+  const { currentStep, isComplete, prevStep } = useOnboardingStore();
 
   if (isComplete) {
     return <CompletionScreen />;
@@ -32,6 +32,21 @@ export function ShadowVectorBuilder() {
           animate={{ width: `${((currentStep + 1) / 8) * 100}%` }}
           transition={{ duration: 0.4, ease: "easeInOut" }}
         />
+      </div>
+
+      {/* Back button + step counter */}
+      <div className="fixed top-4 left-4 z-50 flex items-center gap-3">
+        {currentStep > 0 && (
+          <button
+            onClick={prevStep}
+            className="font-[family-name:var(--font-space-mono)] text-xs text-[#e8f4ff]/30 hover:text-[#e8f4ff]/70 transition-colors"
+          >
+            ← back
+          </button>
+        )}
+        <span className="font-[family-name:var(--font-space-mono)] text-xs text-[#e8f4ff]/20">
+          {currentStep + 1} / 8
+        </span>
       </div>
 
       <AnimatePresence mode="wait">

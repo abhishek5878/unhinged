@@ -147,6 +147,7 @@ async def check_waitlist(
 
 @router.get("/stats", response_model=WaitlistStatsResponse)
 async def get_waitlist_stats(
+    _user: ClerkUser = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ) -> WaitlistStatsResponse:
     """Get waitlist stats (city breakdown, sources, conversions)."""

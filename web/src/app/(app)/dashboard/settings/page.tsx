@@ -38,15 +38,15 @@ export default function SettingsPage() {
             Data & Privacy
           </p>
           <div className="mt-4">
-            <button
-              disabled
-              className="rounded-lg border border-[#162638] px-5 py-2.5 font-[family-name:var(--font-syne)] text-xs font-bold text-[#e8f4ff]/30 transition-all"
-              title="Coming soon"
-            >
-              Export my data
-            </button>
-            <p className="mt-2 font-[family-name:var(--font-space-mono)] text-[10px] text-[#e8f4ff]/20">
-              Download all your profile and simulation data. Coming soon.
+            <p className="font-[family-name:var(--font-space-mono)] text-xs text-[#e8f4ff]/40">
+              To request a copy or deletion of your data, email{" "}
+              <a
+                href="mailto:privacy@prelude.app"
+                className="text-[#00c8ff] hover:underline"
+              >
+                privacy@prelude.app
+              </a>
+              . We respond within 30 days.
             </p>
           </div>
         </div>

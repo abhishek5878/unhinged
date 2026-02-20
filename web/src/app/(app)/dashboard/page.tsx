@@ -30,6 +30,7 @@ function mapApiCandidate(c: {
     city: mock.city,
     attachment_style: (c.attachment_style as MatchCandidate["attachment_style"]) || mock.attachment_style,
     shared_vulnerability_hint: mock.shared_vulnerability_hint,
+    compatibility_score: c.similarity_score,
   };
 }
 

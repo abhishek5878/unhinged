@@ -66,6 +66,7 @@ export interface MatchCandidate {
   city: string;
   attachment_style: "secure" | "anxious" | "avoidant" | "fearful";
   shared_vulnerability_hint: string;
+  compatibility_score?: number;
 }
 
 export interface PastSimulation {

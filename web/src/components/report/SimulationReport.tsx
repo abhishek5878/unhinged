@@ -170,25 +170,17 @@ export function SimulationReport({
 
       {/* Bottom actions */}
       <section className="flex flex-col gap-3 sm:flex-row">
-        <button
-          disabled
-          className="flex-1 rounded-lg border border-[#162638] px-6 py-3 font-[family-name:var(--font-syne)] text-sm font-bold text-[#e8f4ff]/30 transition-all"
-          title="Coming soon"
-        >
-          Download PDF Report
-        </button>
-        <button
-          disabled
-          className="flex-1 rounded-lg border border-[#162638] px-6 py-3 font-[family-name:var(--font-syne)] text-sm font-bold text-[#e8f4ff]/30 transition-all"
-          title="Coming soon"
-        >
-          Share This Result
-        </button>
         <Link
           href="/dashboard"
           className="flex-1 rounded-lg bg-[#00c8ff] px-6 py-3 text-center font-[family-name:var(--font-syne)] text-sm font-bold text-[#020408] transition-all hover:bg-[#00c8ff]/90"
         >
           Simulate with someone else
+        </Link>
+        <Link
+          href="/dashboard/simulations"
+          className="flex-1 rounded-lg border border-[#162638] px-6 py-3 text-center font-[family-name:var(--font-syne)] text-sm font-bold text-[#e8f4ff]/50 transition-all hover:border-[#e8f4ff]/20 hover:text-[#e8f4ff]/70"
+        >
+          View all simulations
         </Link>
       </section>
     </div>
