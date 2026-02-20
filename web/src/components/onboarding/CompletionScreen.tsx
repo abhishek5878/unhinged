@@ -54,6 +54,7 @@ export function CompletionScreen() {
   const { answers } = useOnboardingStore();
   const [showContent, setShowContent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const topValues = (answers.valueRanking || []).slice(0, 3);
   const attachment = answers.attachmentStyle || "secure";
@@ -88,9 +89,10 @@ export function CompletionScreen() {
         body: JSON.stringify(shadowVector),
       });
 
-      router.push("/app/dashboard");
+      router.push("/dashboard");
     } catch (error) {
       console.error("Submission error:", error);
+      setSubmitError("Something went wrong. Please try again.");
       setSubmitting(false);
     }
   }
@@ -166,6 +168,16 @@ export function CompletionScreen() {
           >
             {submitting ? "Saving..." : "Find my first simulation match →"}
           </motion.button>
+
+          {submitError && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mt-4 font-[family-name:var(--font-space-mono)] text-xs text-[#ef4444]"
+            >
+              {submitError}
+            </motion.p>
+          )}
         </motion.div>
       )}
     </div>

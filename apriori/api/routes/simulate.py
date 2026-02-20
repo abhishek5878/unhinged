@@ -12,6 +12,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request,
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from apriori.api.deps import ClerkUser, get_current_user
 from apriori.api.schemas import (
     SimulationCreateRequest,
     SimulationCreateResponse,
@@ -60,14 +61,24 @@ async def _run_inline_simulation(
     session_factory,
 ) -> None:
     """Background task: run Monte Carlo directly (no Temporal)."""
-    from langchain_openai import ChatOpenAI
+    if settings.llm_provider == "anthropic" and settings.anthropic_api_key:
+        from langchain_anthropic import ChatAnthropic
 
-    llm = ChatOpenAI(
-        base_url=settings.vllm_base_url,
-        model=settings.vllm_model_name,
-        api_key="not-needed",
-        temperature=0.7,
-    )
+        llm = ChatAnthropic(
+            model=settings.llm_model,
+            api_key=settings.anthropic_api_key,
+            temperature=0.7,
+            max_tokens=512,
+        )
+    else:
+        from langchain_openai import ChatOpenAI
+
+        llm = ChatOpenAI(
+            base_url=settings.vllm_base_url,
+            model=settings.vllm_model_name,
+            api_key="not-needed",
+            temperature=0.7,
+        )
 
     sev = severity_range or (0.05, 0.95)
     mc = RelationalMonteCarlo(
@@ -114,6 +125,7 @@ async def create_simulation(
     request: SimulationCreateRequest,
     req: Request,
     background_tasks: BackgroundTasks,
+    _user: ClerkUser = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ) -> SimulationCreateResponse:
     """Launch a new Monte Carlo relational simulation.
@@ -134,10 +146,18 @@ async def create_simulation(
     shadow_b = _shadow_from_profile(user_b)
     pair_id = f"{user_a.id}_{user_b.id}"
 
-    # Decide execution mode
+    # Resolve fast-mode parameters
+    if request.fast_mode:
+        n_timelines = min(request.n_timelines, 20)
+        max_turns = 15
+    else:
+        n_timelines = request.n_timelines
+        max_turns = settings.max_timeline_turns
+
+    # Decide execution mode — never use Temporal for fast-mode runs
     use_temporal = request.use_temporal
     if use_temporal is None:
-        use_temporal = request.n_timelines > 20
+        use_temporal = (not request.fast_mode) and (n_timelines > 20)
 
     # Create SimulationRun record
     sim_id = uuid4()
@@ -147,11 +167,11 @@ async def create_simulation(
         user_a_id=request.user_a_id,
         user_b_id=request.user_b_id,
         status="queued",
-        n_timelines=request.n_timelines,
+        n_timelines=n_timelines,
     )
 
-    # Estimate ETA (~3s per timeline for Temporal, ~5s inline)
-    eta = int(request.n_timelines * (3 if use_temporal else 5))
+    # Estimate ETA: fast mode ~3 min, full ~20 min
+    eta = int(n_timelines * (9 if use_temporal else 15))
 
     if use_temporal and req.app.state.temporal_client:
         workflow_id = f"apriori-sim-{sim_id}"
@@ -167,8 +187,8 @@ async def create_simulation(
                 pair_id=pair_id,
                 shadow_a_json=shadow_a.model_dump_json(),
                 shadow_b_json=shadow_b.model_dump_json(),
-                n_simulations=request.n_timelines,
-                max_turns=settings.max_timeline_turns,
+                n_simulations=n_timelines,
+                max_turns=max_turns,
             ),
             id=workflow_id,
             task_queue=settings.temporal_task_queue,
@@ -186,7 +206,7 @@ async def create_simulation(
             shadow_a,
             shadow_b,
             pair_id,
-            request.n_timelines,
+            n_timelines,
             request.crisis_severity_range,
             session_factory,
         )
@@ -200,6 +220,45 @@ async def create_simulation(
 
 
 # ---------------------------------------------------------------------------
+# GET /simulate  (list user's simulations)
+# ---------------------------------------------------------------------------
+
+
+@router.get("", response_model=list[SimulationStatusResponse])
+async def list_simulations(
+    user_id: UUID,
+    limit: int = 20,
+    _user: ClerkUser = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+) -> list[SimulationStatusResponse]:
+    """List simulations for a given user_id (as user_a or user_b)."""
+    result = await session.execute(
+        select(SimulationRun)
+        .where(
+            (SimulationRun.user_a_id == user_id)
+            | (SimulationRun.user_b_id == user_id)
+        )
+        .order_by(SimulationRun.created_at.desc())
+        .limit(limit)
+    )
+    runs = result.scalars().all()
+
+    return [
+        SimulationStatusResponse(
+            simulation_id=r.id,
+            pair_id=r.pair_id,
+            status=r.status,
+            n_timelines=r.n_timelines,
+            temporal_workflow_id=r.temporal_workflow_id,
+            results=r.results,
+            created_at=r.created_at,
+            completed_at=r.completed_at,
+        )
+        for r in runs
+    ]
+
+
+# ---------------------------------------------------------------------------
 # GET /simulate/{simulation_id}
 # ---------------------------------------------------------------------------
 
@@ -207,6 +266,7 @@ async def create_simulation(
 @router.get("/{simulation_id}", response_model=SimulationStatusResponse)
 async def get_simulation(
     simulation_id: UUID,
+    _user: ClerkUser = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ) -> SimulationStatusResponse:
     """Retrieve simulation status and results if completed."""
@@ -245,6 +305,7 @@ async def get_simulation(
 @router.get("/{simulation_id}/report", response_model=SimulationReportResponse)
 async def get_simulation_report(
     simulation_id: UUID,
+    _user: ClerkUser = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ) -> SimulationReportResponse:
     """Generate executive report for a completed simulation."""
@@ -343,6 +404,7 @@ async def simulation_progress(
 async def cancel_simulation(
     simulation_id: UUID,
     req: Request,
+    _user: ClerkUser = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ) -> dict:
     """Send cancellation signal to a running Temporal workflow."""

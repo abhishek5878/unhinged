@@ -16,6 +16,7 @@ export default function ReportPage() {
   const [results, setResults] = useState<SimulationResults | null>(null);
   const [reportText, setReportText] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -34,12 +35,13 @@ export default function ReportPage() {
         if (simData.results) {
           setResults(simData.results);
         } else {
-          // Fallback to mock data
+          setIsDemo(true);
           setResults(generateMockResults());
         }
         setReportText(reportData.report);
       } catch {
         // Fallback to mock data for demo
+        setIsDemo(true);
         setResults(generateMockResults());
       } finally {
         setLoading(false);
@@ -73,10 +75,20 @@ export default function ReportPage() {
   }
 
   return (
-    <SimulationReport
-      simulationId={simulationId}
-      results={results}
-      reportText={reportText}
-    />
+    <div>
+      {isDemo && (
+        <div className="mx-auto mb-6 max-w-[820px] rounded-lg border border-[#fbbf24]/30 bg-[#fbbf24]/5 px-4 py-3">
+          <p className="font-[family-name:var(--font-space-mono)] text-xs text-[#fbbf24]">
+            DEMO MODE — This report uses sample data. Run a real simulation to
+            see your actual compatibility analysis.
+          </p>
+        </div>
+      )}
+      <SimulationReport
+        simulationId={simulationId}
+        results={results}
+        reportText={reportText}
+      />
+    </div>
   );
 }

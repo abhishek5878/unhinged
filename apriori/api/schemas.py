@@ -131,11 +131,15 @@ class SimulationCreateRequest(BaseModel):
         json_schema_extra={"example": "660e8400-e29b-41d4-a716-446655440001"},
     )
     n_timelines: int = Field(
-        default=100,
+        default=20,
         ge=1,
         le=500,
         description="Number of Monte Carlo timelines to simulate",
-        json_schema_extra={"example": 100},
+        json_schema_extra={"example": 20},
+    )
+    fast_mode: bool = Field(
+        default=True,
+        description="Fast mode: 20 timelines, 15 turns (~3-5 min). Set False for full 100-timeline run (~20 min).",
     )
     use_temporal: Optional[bool] = Field(
         default=None,

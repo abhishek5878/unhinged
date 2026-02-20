@@ -16,6 +16,10 @@ class Settings(BaseSettings):
 
     # Anthropic
     anthropic_api_key: str = ""
+    # Model to use: "claude-haiku-4-5-20251001" (fast, cheap) or "claude-sonnet-4-6" (quality)
+    llm_model: str = "claude-haiku-4-5-20251001"
+    # LLM provider: "anthropic" or "openai" (for vLLM / OpenAI-compatible endpoints)
+    llm_provider: str = "anthropic"
 
     # Temporal
     temporal_host: str = "localhost:7233"
@@ -42,6 +46,7 @@ class Settings(BaseSettings):
 
     # Frontend
     frontend_url: str = "http://localhost:3000"
+    cors_allowed_origins: str = "http://localhost:3000"
 
     # Simulation
     default_num_simulations: int = 100

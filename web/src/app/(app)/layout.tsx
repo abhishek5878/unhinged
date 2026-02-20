@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/shell/AppShell";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
@@ -33,7 +34,7 @@ export default async function AppLayout({
 
   return (
     <AppShell profile={{ email: profile?.email, name: profile?.name }}>
-      {children}
+      <ErrorBoundary>{children}</ErrorBoundary>
     </AppShell>
   );
 }

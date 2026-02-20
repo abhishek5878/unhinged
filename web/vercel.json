@@ -1,0 +1,11 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "rewrites": [
+    {
+      "source": "/api/backend/:path*",
+      "destination": "https://your-railway-app.railway.app/:path*"
+    }
+  ]
+}

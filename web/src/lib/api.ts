@@ -165,3 +165,67 @@ export async function cancelSimulation(
     throw new Error("Failed to cancel simulation");
   }
 }
+
+// ---------------------------------------------------------------------------
+// Candidates API
+// ---------------------------------------------------------------------------
+
+export interface CandidateFromAPI {
+  user_id: string;
+  similarity_score: number;
+  attachment_style: string;
+  communication_style: string;
+}
+
+export interface CandidatesResponse {
+  query_user_id: string;
+  candidates: CandidateFromAPI[];
+  total: number;
+}
+
+export async function getCompatibilityCandidates(
+  token: string,
+  userId: string,
+  limit = 6
+): Promise<CandidatesResponse> {
+  const res = await fetch(
+    `${BASE}/profiles/${userId}/compatibility-candidates?limit=${limit}&min_score=0.5`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(10000),
+    }
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Failed to fetch candidates" }));
+    throw new Error(err.detail || "Failed to fetch candidates");
+  }
+  return res.json();
+}
+
+// ---------------------------------------------------------------------------
+// Simulations list
+// ---------------------------------------------------------------------------
+
+export interface SimulationListItem {
+  simulation_id: string;
+  status: string;
+  n_timelines: number;
+  created_at: string;
+  completed_at: string | null;
+  homeostasis_rate: number | null;
+  primary_collapse_vector: string | null;
+}
+
+export async function getMySimulations(
+  token: string,
+  userId: string
+): Promise<SimulationListItem[]> {
+  const res = await fetch(`${BASE}/simulate?user_id=${userId}&limit=20`, {
+    headers: { Authorization: `Bearer ${token}` },
+    signal: AbortSignal.timeout(10000),
+  });
+  if (!res.ok) {
+    throw new Error("Failed to fetch simulations");
+  }
+  return res.json();
+}

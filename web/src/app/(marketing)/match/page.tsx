@@ -515,6 +515,18 @@ function FooterSection() {
           >
             Sign up
           </Link>
+          <Link
+            href="/privacy"
+            className="font-[family-name:var(--font-space-mono)] text-xs text-[#e8f4ff]/40 hover:text-[#e8f4ff]/70 transition-colors"
+          >
+            Privacy
+          </Link>
+          <Link
+            href="/terms"
+            className="font-[family-name:var(--font-space-mono)] text-xs text-[#e8f4ff]/40 hover:text-[#e8f4ff]/70 transition-colors"
+          >
+            Terms
+          </Link>
         </div>
         <p className="mt-6 font-[family-name:var(--font-space-mono)] text-[10px] text-[#e8f4ff]/20">
           &copy; {new Date().getFullYear()} PRELUDE. All rights reserved.

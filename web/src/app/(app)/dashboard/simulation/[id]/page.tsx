@@ -17,6 +17,7 @@ export default function SimulationPage() {
 
   const { status: wsStatus, progress } = useSimulationProgress(simulationId);
   const [results, setResults] = useState<SimulationResults | null>(null);
+  const [isDemo, setIsDemo] = useState(false);
   const [status, setStatus] = useState<
     "connecting" | "running" | "completed" | "failed" | "idle"
   >("connecting");
@@ -41,24 +42,28 @@ export default function SimulationPage() {
         const sim = await getSimulation(token, simulationId);
         if (sim.results) {
           setResults(sim.results);
+          return;
         }
       } catch {
-        // Fallback to mock data for demo
-        setResults(generateMockResults());
+        // Backend unavailable
       }
+      // Fallback to mock data
+      setIsDemo(true);
+      setResults(generateMockResults());
     }
 
     fetchResults();
   }, [status, results, simulationId, getToken]);
 
-  // If WS never connects (demo mode), load mock data after timeout
+  // If WS never connects after 10s, show demo data with banner
   useEffect(() => {
     const timer = setTimeout(() => {
       if (status === "connecting") {
         setStatus("completed");
+        setIsDemo(true);
         setResults(generateMockResults());
       }
-    }, 3000);
+    }, 10000);
     return () => clearTimeout(timer);
   }, [status]);
 
@@ -76,6 +81,16 @@ export default function SimulationPage() {
 
   return (
     <div className="mx-auto max-w-6xl">
+      {/* Demo mode banner */}
+      {isDemo && (
+        <div className="mb-4 rounded-lg border border-[#fbbf24]/30 bg-[#fbbf24]/5 px-4 py-3">
+          <p className="font-[family-name:var(--font-space-mono)] text-xs text-[#fbbf24]">
+            DEMO MODE — Showing sample simulation data. Connect your backend for
+            real results.
+          </p>
+        </div>
+      )}
+
       <div className="mb-6 flex items-center justify-between">
         <div>
           <p className="font-[family-name:var(--font-space-mono)] text-xs uppercase tracking-[0.3em] text-[#00c8ff]/70">

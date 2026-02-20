@@ -52,17 +52,22 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="APRIORI",
+    title="PRELUDE",
     description="Relational Foundation Model API — predicts long-term relational "
     "homeostasis via Recursive Theory of Mind and Monte Carlo trajectory analysis.",
     version="0.1.0",
     lifespan=lifespan,
 )
 
-# CORS (permissive for development)
+# CORS — restrict to known frontend origins in production
+_allowed_origins = [
+    origin.strip()
+    for origin in (settings.cors_allowed_origins or "http://localhost:3000").split(",")
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

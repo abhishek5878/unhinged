@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from apriori.api.deps import ClerkUser, get_current_user
 from apriori.api.schemas import (
     CompatibilityCandidate,
     CompatibilityCandidatesResponse,
@@ -120,6 +121,7 @@ async def create_profile(
 @router.get("/{user_id}", response_model=ProfileResponse)
 async def get_profile(
     user_id: UUID,
+    _user: ClerkUser = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ) -> ProfileResponse:
     """Retrieve a user's shadow vector profile."""
@@ -138,6 +140,7 @@ async def get_profile(
 async def update_profile(
     user_id: UUID,
     request: ProfileUpdateRequest,
+    _user: ClerkUser = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ) -> ProfileResponse:
     """Partial update of shadow vector fields.
@@ -188,6 +191,7 @@ async def get_compatibility_candidates(
     user_id: UUID,
     limit: int = Query(default=10, ge=1, le=100),
     min_score: float = Query(default=0.6, ge=0.0, le=1.0),
+    _user: ClerkUser = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ) -> CompatibilityCandidatesResponse:
     """Find top compatibility candidates via pgvector cosine similarity.
