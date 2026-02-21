@@ -2,20 +2,20 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# System deps for pgvector, sentence-transformers, psycopg
+# System deps for pgvector, psycopg
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python deps
+# Copy all source first (hatchling needs the package dir to build the wheel)
 COPY pyproject.toml .
-RUN pip install --no-cache-dir -e ".[dev]" || pip install --no-cache-dir -e .
-
-# Copy source
 COPY apriori/ apriori/
 COPY alembic/ alembic/
 COPY alembic.ini .
+
+# Install package + dependencies
+RUN pip install --no-cache-dir -e .
 
 # Run migrations then start server
 ENV PYTHONUNBUFFERED=1
