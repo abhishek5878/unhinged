@@ -242,34 +242,25 @@ class LinguisticAlignmentScorer:
     # ------------------------------------------------------------------
 
     def _ensure_model_loaded(self) -> None:
-        """Lazy-load the tokenizer and model from HuggingFace."""
+        """Lazy-load the embedding model via fastembed (ONNX, no torch required)."""
         if self._tokenizer is not None:
             return
-        from transformers import AutoModel, AutoTokenizer
+        from fastembed import TextEmbedding
 
-        self._tokenizer = AutoTokenizer.from_pretrained(self._model_name)
-        self._model = AutoModel.from_pretrained(self._model_name)
+        self._tokenizer = "loaded"
+        self._model = TextEmbedding("sentence-transformers/all-MiniLM-L6-v2")
 
     def compute_embedding(self, text: str) -> List[float]:
-        """Compute the CLS embedding for a text using indic-bert.
+        """Compute an embedding for a text using fastembed.
 
         Returns
         -------
         list[float]
-            The CLS token embedding vector.
+            The embedding vector.
         """
         self._ensure_model_loaded()
-        import torch
-
-        inputs = self._tokenizer(
-            text, return_tensors="pt", truncation=True, max_length=512, padding=True
-        )
-        with torch.no_grad():
-            outputs = self._model(**inputs)
-        cls_embedding = outputs.last_hidden_state[:, 0, :].squeeze().tolist()
-        if isinstance(cls_embedding, float):
-            cls_embedding = [cls_embedding]
-        return cls_embedding
+        embedding = list(next(iter(self._model.embed([text]))))
+        return embedding
 
     def _get_turn_embedding(self, agent_id: str, turn_index: int) -> List[float]:
         """Get or compute and cache the embedding for a specific turn."""

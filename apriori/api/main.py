@@ -23,7 +23,10 @@ async def lifespan(app: FastAPI):
     """Application lifespan: init DB, Redis, Temporal on startup; cleanup on shutdown."""
     # --- Startup ---
     logger.info("Initializing database (pgvector + tables)…")
-    await init_db()
+    try:
+        await init_db()
+    except Exception as exc:
+        logger.warning("Database initialization failed (will retry on first request): %s", exc)
 
     logger.info("Connecting to Redis at %s…", settings.redis_url)
     app.state.redis = aioredis.from_url(

@@ -32,12 +32,12 @@ router = APIRouter()
 
 
 def _compute_embedding(shadow: ShadowVector) -> list[float]:
-    """Compute a 512-dim embedding from a ShadowVector using sentence-transformers.
+    """Compute a 512-dim embedding from a ShadowVector using fastembed (ONNX).
 
     Constructs a natural-language description of the shadow vector and
     encodes it via a sentence transformer model. Pads/truncates to 512 dims.
     """
-    from sentence_transformers import SentenceTransformer
+    from fastembed import TextEmbedding
 
     description = (
         f"A person with attachment style {shadow.attachment_style.value}. "
@@ -47,8 +47,8 @@ def _compute_embedding(shadow: ShadowVector) -> list[float]:
         f"Entropy tolerance: {shadow.entropy_tolerance:.2f}."
     )
 
-    model = SentenceTransformer("all-MiniLM-L6-v2")
-    raw = model.encode(description).tolist()
+    model = TextEmbedding("sentence-transformers/all-MiniLM-L6-v2")
+    raw = list(next(iter(model.embed([description]))))
 
     # Pad to 512 or truncate
     if len(raw) < 512:
