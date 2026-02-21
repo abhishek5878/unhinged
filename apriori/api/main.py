@@ -31,10 +31,14 @@ async def lifespan(app: FastAPI):
     )
 
     try:
+        import asyncio as _asyncio
         logger.info("Connecting to Temporal at %s…", settings.temporal_host)
-        app.state.temporal_client = await TemporalClient.connect(
-            settings.temporal_host,
-            namespace=settings.temporal_namespace,
+        app.state.temporal_client = await _asyncio.wait_for(
+            TemporalClient.connect(
+                settings.temporal_host,
+                namespace=settings.temporal_namespace,
+            ),
+            timeout=5.0,
         )
     except Exception as exc:
         logger.warning("Temporal connection failed (workflows unavailable): %s", exc)
