@@ -103,7 +103,17 @@ async def get_me(
     profile = result.scalar_one_or_none()
 
     if not profile:
-        raise HTTPException(status_code=404, detail="User profile not found")
+        # Auto-create profile from JWT claims (fallback when webhook is missed)
+        profile = UserProfile(
+            clerk_user_id=user.user_id,
+            email=user.email,
+            shadow_vector={},
+            onboarding_complete=False,
+        )
+        session.add(profile)
+        await session.commit()
+        await session.refresh(profile)
+        logger.info("Auto-created profile for clerk_id=%s", user.user_id)
 
     sim_count_result = await session.execute(
         select(func.count()).select_from(SimulationRun).where(

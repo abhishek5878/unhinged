@@ -17,7 +17,15 @@ export default function SimulationsPage() {
   const userId = (user?.publicMetadata as { user_id?: string })?.user_id;
 
   useEffect(() => {
-    if (!userId) return;
+    if (!user) return; // Clerk still loading
+
+    if (!userId) {
+      // User loaded but no user_id in publicMetadata — show demo
+      setSims(mockPastSimulations);
+      setIsDemo(true);
+      setLoading(false);
+      return;
+    }
 
     async function fetchSims() {
       setLoading(true);
@@ -51,7 +59,7 @@ export default function SimulationsPage() {
     }
 
     fetchSims();
-  }, [userId, getToken]);
+  }, [userId, getToken, user]);
 
   if (loading) {
     return (
