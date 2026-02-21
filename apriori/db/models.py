@@ -4,16 +4,13 @@ import uuid
 from datetime import datetime, timezone
 from typing import List, Optional
 
-from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     Boolean,
     DateTime,
     Float,
     ForeignKey,
-    Index,
     Integer,
     String,
-    Text,
 )
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -49,7 +46,7 @@ class UserProfile(Base):
     is_deleted: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False
     )
-    embedding = mapped_column(Vector(512), nullable=True)
+    embedding: Mapped[Optional[list]] = mapped_column(JSONB, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow
     )
@@ -68,15 +65,7 @@ class UserProfile(Base):
         back_populates="user"
     )
 
-    __table_args__ = (
-        Index(
-            "ix_user_profiles_embedding_cosine",
-            embedding,
-            postgresql_using="ivfflat",
-            postgresql_with={"lists": 100},
-            postgresql_ops={"embedding": "vector_cosine_ops"},
-        ),
-    )
+    __table_args__ = ()
 
     def __repr__(self) -> str:
         return f"UserProfile(id={self.id!s:.8}…)"

@@ -20,25 +20,14 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Enable pgvector extension
-    op.execute("CREATE EXTENSION IF NOT EXISTS vector")
-
-    # user_profiles
+    # user_profiles (embedding stored as JSONB float array for portability)
     op.create_table(
         "user_profiles",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column("shadow_vector", postgresql.JSONB(), nullable=False),
-        sa.Column("embedding", sa.Column("embedding", sa.Text()), nullable=True),
+        sa.Column("embedding", postgresql.JSONB(), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
-    )
-    # pgvector column needs raw SQL since alembic doesn't natively support Vector
-    op.execute("ALTER TABLE user_profiles ALTER COLUMN embedding TYPE vector(512) USING embedding::vector(512)")
-
-    # IVFFlat cosine similarity index
-    op.execute(
-        "CREATE INDEX ix_user_profiles_embedding_cosine "
-        "ON user_profiles USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100)"
     )
 
     # simulation_runs
@@ -111,6 +100,4 @@ def downgrade() -> None:
     op.drop_table("linguistic_profiles")
     op.drop_table("crisis_episodes")
     op.drop_table("simulation_runs")
-    op.drop_index("ix_user_profiles_embedding_cosine", table_name="user_profiles")
     op.drop_table("user_profiles")
-    op.execute("DROP EXTENSION IF EXISTS vector")

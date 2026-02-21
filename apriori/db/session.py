@@ -38,16 +38,13 @@ async_session = async_sessionmaker(
 
 
 async def init_db() -> None:
-    """Register pgvector extension and create all tables."""
-    from sqlalchemy import text
-
+    """Create all tables."""
     import apriori.db.models  # noqa: F401 — ensure models are registered
 
     async with engine.begin() as conn:
-        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
         await conn.run_sync(Base.metadata.create_all)
 
-    logger.info("Database initialized (pgvector extension registered, tables created)")
+    logger.info("Database initialized (tables created)")
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
