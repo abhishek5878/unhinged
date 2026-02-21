@@ -5,7 +5,7 @@
   "rewrites": [
     {
       "source": "/api/backend/:path*",
-      "destination": "https://your-railway-app.railway.app/:path*"
+      "destination": "https://prelude-backend-production.up.railway.app/:path*"
     }
   ]
 }
