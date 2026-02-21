@@ -39,11 +39,16 @@ router = APIRouter()
 
 def _shadow_from_profile(profile: UserProfile) -> ShadowVector:
     """Reconstruct a ShadowVector from a stored profile's JSONB."""
-    data = profile.shadow_vector
+    data = profile.shadow_vector or {}
+    if not data.get("values"):
+        raise HTTPException(
+            status_code=409,
+            detail=f"Profile {profile.id} has no shadow vector — user must complete onboarding first.",
+        )
     return ShadowVector(
         agent_id=str(profile.id),
         values=data["values"],
-        attachment_style=AttachmentStyle(data["attachment_style"]),
+        attachment_style=AttachmentStyle(data.get("attachment_style", "secure")),
         fear_architecture=data.get("fear_architecture", []),
         linguistic_signature=data.get("linguistic_signature", []),
         entropy_tolerance=data.get("entropy_tolerance", 0.5),

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useOnboardingStore } from "@/lib/onboarding-store";
 import { Step1 } from "./steps/Step1";
@@ -13,9 +14,19 @@ import { Step8 } from "./steps/Step8";
 import { CompletionScreen } from "./CompletionScreen";
 
 const steps = [Step1, Step2, Step3, Step4, Step5, Step6, Step7, Step8];
+// Exit animation duration in ms — counter lags by this so it matches visible content
+const EXIT_MS = 360;
 
 export function ShadowVectorBuilder() {
   const { currentStep, isComplete, prevStep } = useOnboardingStore();
+  // displayStep lags behind currentStep so the counter matches the content
+  // that's actually visible (exit animation takes EXIT_MS ms)
+  const [displayStep, setDisplayStep] = useState(currentStep);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDisplayStep(currentStep), EXIT_MS);
+    return () => clearTimeout(t);
+  }, [currentStep]);
 
   if (isComplete) {
     return <CompletionScreen />;
@@ -29,14 +40,14 @@ export function ShadowVectorBuilder() {
       <div className="fixed top-0 left-0 right-0 z-50 h-[2px] bg-[#162638]">
         <motion.div
           className="h-full bg-[#00c8ff]"
-          animate={{ width: `${((currentStep + 1) / 8) * 100}%` }}
+          animate={{ width: `${((displayStep + 1) / 8) * 100}%` }}
           transition={{ duration: 0.4, ease: "easeInOut" }}
         />
       </div>
 
       {/* Back button + step counter */}
       <div className="fixed top-4 left-4 z-50 flex items-center gap-3">
-        {currentStep > 0 && (
+        {displayStep > 0 && (
           <button
             onClick={prevStep}
             className="font-[family-name:var(--font-space-mono)] text-xs text-[#e8f4ff]/30 hover:text-[#e8f4ff]/70 transition-colors"
@@ -45,7 +56,7 @@ export function ShadowVectorBuilder() {
           </button>
         )}
         <span className="font-[family-name:var(--font-space-mono)] text-xs text-[#e8f4ff]/20">
-          {currentStep + 1} / 8
+          {displayStep + 1} / 8
         </span>
       </div>
 

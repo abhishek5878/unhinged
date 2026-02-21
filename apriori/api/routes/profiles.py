@@ -132,10 +132,9 @@ async def create_profile(
 @router.get("/{user_id}", response_model=ProfileResponse)
 async def get_profile(
     user_id: UUID,
-    _user: ClerkUser = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ) -> ProfileResponse:
-    """Retrieve a user's shadow vector profile."""
+    """Retrieve a user's shadow vector profile (public — used for sharing cards)."""
     profile = await session.get(UserProfile, user_id)
     if not profile:
         raise HTTPException(status_code=404, detail=f"Profile {user_id} not found")
@@ -181,7 +180,16 @@ async def update_profile(
     )
 
     profile.shadow_vector = sv
-    profile.embedding = _compute_embedding(shadow)
+
+    # Mark onboarding complete whenever a full shadow vector (with values) is saved
+    if sv.get("values"):
+        profile.onboarding_complete = True
+
+    # Compute embedding — skip gracefully if fastembed is unavailable/times out
+    try:
+        profile.embedding = _compute_embedding(shadow)
+    except Exception as exc:
+        logger.warning("Embedding computation failed, skipping: %s", exc)
 
     await session.commit()
     await session.refresh(profile)
