@@ -21,4 +21,4 @@ RUN pip install --no-cache-dir -e .
 ENV PYTHONUNBUFFERED=1
 EXPOSE 8000
 
-CMD ["sh", "-c", "echo '[startup] running alembic...' && (alembic upgrade head 2>&1 || echo '[startup] alembic migration failed, continuing anyway...') && echo '[startup] starting uvicorn...' && uvicorn apriori.api.main:app --host 0.0.0.0 --port 8000 --log-level info"]
+CMD ["sh", "-c", "echo '[startup] running alembic...' && (alembic upgrade head 2>&1 || echo '[startup] alembic migration failed, continuing anyway...') && echo '[startup] starting uvicorn on port ${PORT:-8000}...' && uvicorn apriori.api.main:app --host 0.0.0.0 --port ${PORT:-8000} --log-level info"]
