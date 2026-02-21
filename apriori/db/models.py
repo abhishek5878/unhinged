@@ -182,6 +182,40 @@ class LinguisticProfileRecord(Base):
         return f"LinguisticProfileRecord(id={self.id!s:.8}…, user={self.user_id!s:.8}…)"
 
 
+class SimulationInvite(Base):
+    """Invite token allowing a user to pair with another for a simulation."""
+
+    __tablename__ = "simulation_invites"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    token: Mapped[str] = mapped_column(
+        String(16), nullable=False, unique=True, index=True
+    )
+    inviter_user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("user_profiles.id"), nullable=False
+    )
+    invitee_user_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("user_profiles.id"), nullable=True
+    )
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="pending"
+    )
+    expires_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+    simulation_run_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("simulation_runs.id"), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow
+    )
+
+    def __repr__(self) -> str:
+        return f"SimulationInvite(token={self.token!r}, status={self.status!r})"
+
+
 class WaitlistSignup(Base):
     """Waitlist signup for early access."""
 

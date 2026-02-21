@@ -11,7 +11,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from temporalio.client import Client as TemporalClient
 
-from apriori.api.routes import auth, profiles, simulate, waitlist
+from apriori.api.routes import auth, invites, profiles, simulate, waitlist
 from apriori.config import settings
 from apriori.db.session import engine, init_db
 
@@ -102,6 +102,7 @@ app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(simulate.router, prefix="/simulate", tags=["simulation"])
 app.include_router(profiles.router, prefix="/profiles", tags=["profiles"])
 app.include_router(waitlist.router, prefix="/waitlist", tags=["waitlist"])
+app.include_router(invites.router, prefix="/invites", tags=["invites"])
 
 
 @app.get("/health")

@@ -363,20 +363,6 @@ function TrustSection() {
 // Section 6 — Waitlist CTA
 // ---------------------------------------------------------------------------
 
-const cities = [
-  "Mumbai",
-  "Delhi",
-  "Bangalore",
-  "Hyderabad",
-  "Pune",
-  "Chennai",
-  "Kolkata",
-  "Ahmedabad",
-  "Jaipur",
-  "Lucknow",
-  "Other",
-];
-
 function WaitlistCTASection() {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
@@ -454,21 +440,14 @@ function WaitlistCTASection() {
               required
               className="w-full rounded-lg border border-[#162638] bg-transparent px-5 py-4 font-[family-name:var(--font-space-mono)] text-sm text-[#e8f4ff] placeholder:text-[#e8f4ff]/30 focus:border-[#00c8ff]/50 focus:outline-none transition-colors"
             />
-            <select
+            <input
+              type="text"
               value={city}
               onChange={(e) => setCity(e.target.value)}
+              placeholder="Your city"
               required
-              className="w-full appearance-none rounded-lg border border-[#162638] bg-[#020408] px-5 py-4 font-[family-name:var(--font-space-mono)] text-sm text-[#e8f4ff] focus:border-[#00c8ff]/50 focus:outline-none transition-colors"
-            >
-              <option value="" disabled>
-                Select your city
-              </option>
-              {cities.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+              className="w-full rounded-lg border border-[#162638] bg-transparent px-5 py-4 font-[family-name:var(--font-space-mono)] text-sm text-[#e8f4ff] placeholder:text-[#e8f4ff]/30 focus:border-[#00c8ff]/50 focus:outline-none transition-colors"
+            />
             {error && (
               <p className="font-[family-name:var(--font-space-mono)] text-sm text-red-400">
                 {error}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
+import Link from "next/link";
 
 interface ProfileData {
   user_id: string;
@@ -117,7 +118,29 @@ export default function ProfilePage() {
         </div>
 
         {/* Actions */}
-        {!profile?.has_shadow_vector && (
+        {profile?.has_shadow_vector ? (
+          <div className="space-y-3">
+            <Link
+              href={`/profile/${profile.user_id}`}
+              className="block w-full rounded-lg border border-[#162638] px-6 py-3 text-center font-[family-name:var(--font-space-mono)] text-xs text-[#e8f4ff]/60 transition-all hover:border-[#00c8ff]/30 hover:text-[#e8f4ff]"
+              target="_blank"
+            >
+              View public card
+            </Link>
+            <button
+              onClick={() => {
+                const origin = window.location.origin;
+                const text = encodeURIComponent(
+                  `I just mapped my relationship blueprint on PRELUDE. Take yours: ${origin}/profile/${profile.user_id}`
+                );
+                window.open(`https://wa.me/?text=${text}`, "_blank");
+              }}
+              className="w-full rounded-lg bg-[#25d366] px-6 py-3 font-[family-name:var(--font-space-mono)] text-xs font-bold text-white transition-all hover:bg-[#25d366]/90"
+            >
+              Share your Shadow Vector on WhatsApp
+            </button>
+          </div>
+        ) : (
           <a
             href="/onboarding"
             className="block w-full rounded-lg bg-[#00c8ff] px-6 py-3 text-center font-[family-name:var(--font-syne)] text-sm font-bold text-[#020408] transition-all hover:bg-[#00c8ff]/90"

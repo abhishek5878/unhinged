@@ -20,3 +20,5 @@ web/.next/
 web/out/
 web/.env.local
 .vercel
+deploy_railway.sh
+/tmp/setvars*.sh

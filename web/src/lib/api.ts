@@ -229,3 +229,63 @@ export async function getMySimulations(
   }
   return res.json();
 }
+
+// ---------------------------------------------------------------------------
+// Invite API
+// ---------------------------------------------------------------------------
+
+export interface InviteResponse {
+  token: string;
+  link_path: string;
+  expires_at: string;
+}
+
+export interface InviteInfoResponse {
+  token: string;
+  status: string;
+  inviter_attachment_style: string;
+  inviter_has_shadow_vector: boolean;
+  expires_at: string;
+}
+
+export interface ClaimInviteResponse {
+  simulation_id: string;
+  status: string;
+  eta_seconds: number;
+}
+
+export async function createInvite(token: string): Promise<InviteResponse> {
+  const res = await fetch(`${BASE}/invites`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Failed to create invite" }));
+    throw new Error(err.detail || "Failed to create invite");
+  }
+  return res.json();
+}
+
+export async function getInviteInfo(inviteToken: string): Promise<InviteInfoResponse> {
+  const res = await fetch(`${BASE}/invites/${inviteToken}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Invite not found" }));
+    throw new Error(err.detail || "Invite not found");
+  }
+  return res.json();
+}
+
+export async function claimInvite(
+  token: string,
+  inviteToken: string
+): Promise<ClaimInviteResponse> {
+  const res = await fetch(`${BASE}/invites/${inviteToken}/claim`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Failed to claim invite" }));
+    throw new Error(err.detail || "Failed to claim invite");
+  }
+  return res.json();
+}

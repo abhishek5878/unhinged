@@ -36,6 +36,15 @@ export function SimulationReport({
     (t) => t.crisis_axis === topCollapseAxis
   ).length;
 
+  function handleWhatsAppShare() {
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://prelude.app";
+    const homeostasisPct = Math.round(results.homeostasis_rate * 100);
+    const text = encodeURIComponent(
+      `PRELUDE simulated ${results.n_simulations} futures of my relationship. ${homeostasisPct}% reached homeostasis. Top tension pattern: ${topCollapseAxis ?? "unknown"}. See yours: ${origin}/match`
+    );
+    window.open(`https://wa.me/?text=${text}`, "_blank");
+  }
+
   return (
     <div className="mx-auto max-w-[820px] space-y-16 pb-20">
       {/* Section 1 — Header */}
@@ -46,12 +55,22 @@ export function SimulationReport({
         <p className="mt-1 font-[family-name:var(--font-space-mono)] text-[10px] text-[#e8f4ff]/20">
           {simulationId} · {new Date(results.computed_at).toLocaleDateString("en-IN")}
         </p>
-        <h1 className="mt-4 font-[family-name:var(--font-syne)] text-3xl font-extrabold text-[#e8f4ff] md:text-4xl">
-          {nameA} & {nameB}
-        </h1>
-        <p className="mt-1 font-[family-name:var(--font-space-mono)] text-xs text-[#e8f4ff]/40">
-          {results.n_simulations} timelines · {new Date(results.computed_at).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
-        </p>
+        <div className="mt-4 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="font-[family-name:var(--font-syne)] text-3xl font-extrabold text-[#e8f4ff] md:text-4xl">
+              {nameA} & {nameB}
+            </h1>
+            <p className="mt-1 font-[family-name:var(--font-space-mono)] text-xs text-[#e8f4ff]/40">
+              {results.n_simulations} timelines · {new Date(results.computed_at).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
+            </p>
+          </div>
+          <button
+            onClick={handleWhatsAppShare}
+            className="shrink-0 rounded-lg bg-[#25d366] px-4 py-2 font-[family-name:var(--font-space-mono)] text-xs font-bold text-white transition-all hover:bg-[#25d366]/90"
+          >
+            Share on WhatsApp
+          </button>
+        </div>
       </section>
 
       {/* Section 2 — Three Numbers */}
