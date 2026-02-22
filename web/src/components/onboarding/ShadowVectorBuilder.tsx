@@ -60,9 +60,10 @@ export function ShadowVectorBuilder() {
         </span>
       </div>
 
-      {/* No mode="wait" — exit and enter run simultaneously, which prevents
-          the hold-and-re-enter glitch that caused duplicate question display */}
-      <AnimatePresence>
+      {/* mode="wait" ensures only one step is mounted at a time — the old
+          step fully exits before the new one enters, making duplicate
+          question display impossible regardless of timing */}
+      <AnimatePresence mode="wait">
         <motion.div
           key={currentStep}
           initial={{ opacity: 0, x: 60 }}

@@ -48,19 +48,22 @@ export function Step5() {
   const [selected, setSelected] = useState<string[]>([]);
 
   function toggle(id: string) {
-    setSelected((prev) => {
-      if (prev.includes(id)) return prev.filter((b) => b !== id);
-      if (prev.length >= 2) return prev;
-      const next = [...prev, id];
-      if (next.length === 2) {
-        const phrases = bubbles
-          .filter((b) => next.includes(b.id))
-          .flatMap((b) => b.phrases);
-        setAnswer("linguisticSignature", phrases);
-        setTimeout(() => nextStep(), 400);
-      }
-      return next;
-    });
+    // Side effects must NOT live inside a functional updater — React may call
+    // updaters more than once, which would schedule duplicate timers.
+    if (selected.includes(id)) {
+      setSelected(selected.filter((b) => b !== id));
+      return;
+    }
+    if (selected.length >= 2) return;
+    const next = [...selected, id];
+    setSelected(next);
+    if (next.length === 2) {
+      const phrases = bubbles
+        .filter((b) => next.includes(b.id))
+        .flatMap((b) => b.phrases);
+      setAnswer("linguisticSignature", phrases);
+      setTimeout(() => nextStep(), 400);
+    }
   }
 
   return (
