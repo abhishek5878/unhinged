@@ -20,16 +20,20 @@ export function Step3() {
   const [selected, setSelected] = useState<string[]>([]);
 
   function toggle(id: string) {
-    setSelected((prev) => {
-      if (prev.includes(id)) return prev.filter((f) => f !== id);
-      if (prev.length >= 4) return prev;
-      const next = [...prev, id];
-      if (next.length === 4) {
-        setAnswer("fearArchitecture", next);
-        setTimeout(() => nextStep(), 400);
-      }
-      return next;
-    });
+    // Side effects must NOT live inside a functional updater — React may call
+    // updaters more than once (Strict Mode / concurrent rendering), which would
+    // set duplicate timers and call nextStep() twice, skipping a step.
+    if (selected.includes(id)) {
+      setSelected(selected.filter((f) => f !== id));
+      return;
+    }
+    if (selected.length >= 4) return;
+    const next = [...selected, id];
+    setSelected(next);
+    if (next.length === 4) {
+      setAnswer("fearArchitecture", next);
+      setTimeout(() => nextStep(), 400);
+    }
   }
 
   function handleContinue() {

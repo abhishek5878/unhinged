@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useClerk } from "@clerk/nextjs";
+import { useClerk, useUser } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Users,
@@ -40,6 +40,18 @@ function SidebarContent({
   onClose?: () => void;
 }) {
   const { signOut } = useClerk();
+  // useUser() is the authoritative Clerk source — server-side profile.name/email
+  // may be empty if /auth/me hasn't been synced yet
+  const { user } = useUser();
+  const displayName =
+    profile.name ||
+    user?.fullName ||
+    (user?.firstName ? `${user.firstName} ${user.lastName ?? ""}`.trim() : null);
+  const displayEmail =
+    profile.email ||
+    user?.primaryEmailAddress?.emailAddress ||
+    null;
+  const initial = ((displayName || displayEmail || "U")[0] ?? "U").toUpperCase();
 
   return (
     <div className="flex h-full flex-col bg-[#060d14] border-r border-[#162638]">
@@ -95,13 +107,18 @@ function SidebarContent({
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#00c8ff]/10 text-[#00c8ff]">
             <span className="font-[family-name:var(--font-syne)] text-xs font-bold">
-              {(profile.name || profile.email || "U")[0].toUpperCase()}
+              {initial}
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="truncate font-[family-name:var(--font-space-mono)] text-xs text-[#e8f4ff]/70">
-              {profile.email || "User"}
+            <p className="truncate font-[family-name:var(--font-space-mono)] text-xs font-semibold text-[#e8f4ff]/80">
+              {displayName || displayEmail || "User"}
             </p>
+            {displayName && displayEmail && (
+              <p className="truncate font-[family-name:var(--font-space-mono)] text-[10px] text-[#e8f4ff]/30">
+                {displayEmail}
+              </p>
+            )}
           </div>
           <button
             onClick={() => signOut()}

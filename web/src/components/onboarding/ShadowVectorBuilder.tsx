@@ -60,14 +60,16 @@ export function ShadowVectorBuilder() {
         </span>
       </div>
 
-      <AnimatePresence mode="wait">
+      {/* No mode="wait" — exit and enter run simultaneously, which prevents
+          the hold-and-re-enter glitch that caused duplicate question display */}
+      <AnimatePresence>
         <motion.div
           key={currentStep}
           initial={{ opacity: 0, x: 60 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -60 }}
-          transition={{ duration: 0.35, ease: "easeInOut" }}
-          className="flex min-h-screen items-center justify-center px-4"
+          transition={{ duration: 0.25, ease: "easeInOut" }}
+          className="absolute inset-0 flex items-center justify-center px-4 pt-12"
         >
           <StepComponent />
         </motion.div>
