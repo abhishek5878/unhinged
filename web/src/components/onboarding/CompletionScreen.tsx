@@ -110,7 +110,7 @@ export function CompletionScreen() {
         if (inviteRes.ok) {
           const inv = await inviteRes.json();
           const origin =
-            typeof window !== "undefined" ? window.location.origin : "https://prelude.app";
+            typeof window !== "undefined" ? window.location.origin : "https://tryprior.xyz";
           setInviteLink(`${origin}/simulate/invite/${inv.token}`);
         }
       } catch {
@@ -137,7 +137,7 @@ export function CompletionScreen() {
 
   // ── 4. WhatsApp share ───────────────────────────────────────────────────────
   function handleWhatsApp() {
-    const link = inviteLink ?? (typeof window !== "undefined" ? window.location.origin + "/match" : "https://prelude.app/match");
+    const link = inviteLink ?? (typeof window !== "undefined" ? window.location.origin + "/match" : "https://tryprior.xyz/match");
     const text = encodeURIComponent(
       `I just found out I'm ${attachmentLabel} on PRELUDE. Take yours and tell me if we'd have survived month 3 together: ${link}`
     );

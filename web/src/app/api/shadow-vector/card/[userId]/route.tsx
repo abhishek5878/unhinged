@@ -192,7 +192,7 @@ export async function GET(
               letterSpacing: "0.1em",
             }}
           >
-            prelude.app
+            tryprior.xyz
           </span>
           <span
             style={{

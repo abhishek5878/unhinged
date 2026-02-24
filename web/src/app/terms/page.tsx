@@ -100,7 +100,7 @@ export default function TermsPage() {
               8. Contact
             </h2>
             <p>
-              Questions about these terms: legal@prelude.app
+              Questions about these terms: legal@tryprior.xyz
             </p>
           </section>
         </div>

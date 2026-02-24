@@ -69,7 +69,7 @@ export default function PrivacyPage() {
             </h2>
             <p>
               You can request deletion of all your data at any time by contacting us at
-              privacy@prelude.app or via the Settings page. We will delete your profile,
+              privacy@tryprior.xyz or via the Settings page. We will delete your profile,
               Shadow Vector, and all simulation data within 30 days.
             </p>
           </section>
@@ -89,7 +89,7 @@ export default function PrivacyPage() {
               Contact
             </h2>
             <p>
-              Questions about privacy: privacy@prelude.app
+              Questions about privacy: privacy@tryprior.xyz
             </p>
           </section>
         </div>

@@ -104,7 +104,7 @@ export default function PublicProfilePage() {
   }
 
   function handleWhatsApp() {
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://prelude.app";
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://tryprior.xyz";
     const text = encodeURIComponent(
       `I'm ${label} on PRELUDE. Take yours and tell me if we'd survive: ${origin}/profile/${userId}`
     );
